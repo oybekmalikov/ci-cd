@@ -18,4 +18,6 @@ jobs:
       - name: install
         run: npm ci
       - name: Lint-Test
+        env:
+          PORT: ${{ secrets.PORT }}
         run: npm run test
