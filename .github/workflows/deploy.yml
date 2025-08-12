@@ -1,20 +1,25 @@
 name: Deploy to VPS
+
 on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Kodni yuklash
         uses: actions/checkout@v4
+
       - name: SSH kalitni sozlash
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
         shell: bash
+
       - name: Serverga deploy qilish
         env:
           HOST: ${{ secrets.HOST }}
@@ -22,8 +27,7 @@ jobs:
           APP_DIR: /ci_cd
           PORT: ${{ secrets.PORT }}
         run: |
-          ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
-          ssh $USER@$HOST "
+          ssh -o StrictHostKeyChecking=no $USER@$HOST "
             if [ ! -d $APP_DIR ]; then
               mkdir -p $APP_DIR
               git clone https://github.com/oybekmalikov/ci-cd.git $APP_DIR
